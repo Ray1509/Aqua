@@ -61,7 +61,13 @@ const Cliente = () => {
   };
 
   useEffect(() => {
-    getClientes();
+    Api.authenticate()
+      .then(() => {
+        getClientes();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }, []);
 
   return (
