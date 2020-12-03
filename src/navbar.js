@@ -9,6 +9,9 @@ class Navbarr extends React.Component {
       <Navbar bg="dark" variant="dark">
         <Navbar.Brand to="/">Aqua</Navbar.Brand>
         <Nav className="mr-auto text-white">
+          <Link className="text-reset text-decoration-none mr-3" to="/">
+            Inicio
+          </Link>
           <Link className="text-reset text-decoration-none mr-3" to="/cliente">
             Cliente
           </Link>

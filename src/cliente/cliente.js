@@ -6,7 +6,6 @@ import moment from "moment";
 import "moment/locale/es";
 import Modal from "react-bootstrap/Modal";
 import Api from "../conexion";
-import Navbarr from "../navbar";
 
 const Cliente = () => {
   const [state, setState] = useState({
@@ -22,6 +21,12 @@ const Cliente = () => {
 
   const [datos, setDatos] = useState([]);
   const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    Api.authenticate().then(() => {
+      getClientes();
+    }).catch((error) => { console.log(error); })
+  }, [])
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -41,7 +46,7 @@ const Cliente = () => {
       .then(() => {
         getClientes();
       });
-    setShow(handleClose);
+    handleClose()
     setState({
       form: {
         nombre: "",
@@ -57,16 +62,15 @@ const Cliente = () => {
   const getClientes = () => {
     Api.service("cliente")
       .find()
-      .then((response) => setDatos(response));
+      .then((response) => {
+        console.log(response.data);
+        setDatos(response)
+      });
   };
 
-  useEffect(() => {
-    getClientes();
-  }, []);
 
   return (
     <div>
-      <Navbarr />
       <div className="container">
         <div>
           <h1 className="text-center"> Cliente </h1>

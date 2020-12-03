@@ -4,9 +4,9 @@ import Api from "../conexion";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import Navbarr from "../navbar";
 
 const Consumo = (props) => {
+  const clienteId = props.match.params.clienteId
   const [lectura_actual, setLectura] = useState("");
 
   const [datos, setDatos] = useState([]);
@@ -46,17 +46,16 @@ const Consumo = (props) => {
 
   useEffect(() => {
     Api.service("cliente")
-      .get(props.match.params.clienteId)
+      .get(clienteId)
       .then((response) => setCliente(response));
 
     Api.service("consumo")
-      .find({ query: { clienteId: props.match.params.clienteId } })
+      .find({ query: { clienteId: clienteId } })
       .then((response) => setDatos(response));
   }, []);
 
   return (
     <div>
-      <Navbarr />
       <div className="container">
         <div>
           <h1 className="text-center"> Consumo de cliente </h1>

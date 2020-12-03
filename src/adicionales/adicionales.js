@@ -3,6 +3,7 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Api from "../conexion";
 import Navbarr from "../navbar";
+import _ from 'underscore';
 
 const Adicionales = () => {
   const [datos, setDatos] = useState([]);
@@ -10,11 +11,8 @@ const Adicionales = () => {
   useEffect(() => {
     Api.service("adicionales")
       .find()
-      .then((response) => response)
       .then((data) => setDatos(data));
   }, []);
-
-  console.log(datos);
 
   return (
     <div>
@@ -33,17 +31,24 @@ const Adicionales = () => {
             </thead>
             <tbody>
               {datos.data &&
-                datos.data.map((dato) => {
-                  return (
-                    <tr key={dato.id}>
-                      <td>{dato.id}</td>
-                      <td>{dato.nombre}</td>
-                      <td>
-                        <Button variant="link">Editar</Button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                <>
+                  {
+                    _.map(datos.data, (dato) => {
+                      return (
+                        <>
+                          <tr key={dato.id}>
+                            <td>{dato.id}</td>
+                            <td>{dato.nombre}</td>
+                            <td>
+                              <Button variant="link">Editar</Button>
+                            </td>
+                          </tr>
+                        </>
+                      )
+                    })
+                  }
+                </>
+              }
             </tbody>
           </Table>
         </div>
