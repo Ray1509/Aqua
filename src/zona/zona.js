@@ -3,41 +3,66 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Api from "../conexion";
-import Navbarr from "../navbar";
 
 const Zona = (props) => {
-  const [state, setState] = useState({ form: { nombre: "" } });
-
+  const [nombre, setNombre] = useState("");
+  const [editing, setEditing] = useState(false);
   const [datos, verDatos] = useState([]);
+  const [dato, setDato] = useState({});
+
   const [show, setShow] = useState(false);
 
-  const ocultar = () => setShow(false);
+  useEffect(() => {
+    Api.authenticate()
+      .then(() => {
+        getZonas();
+      })
+      .catch(() => {});
+  }, []);
+
+  const limpiar = () => {
+    setEditing(false);
+    setDato({});
+    setShow(false);
+    setNombre("");
+  };
   const desplegar = () => setShow(true);
 
   const handleChange = (e) => {
-    setState({
-      form: {
-        ...state.form,
-        [e.target.name]: e.target.value,
-      },
-    });
+    setNombre(e.target.value);
   };
 
-  const crearZona = async () => {
-    await Api.service("zona").create(state.form);
-    setShow(ocultar);
+  const saveZona = () => {
+    if (editing) {
+      Api.service("zona")
+        .patch(dato.id, { nombre })
+        .then(() => {
+          getZonas();
+        });
+    } else {
+      Api.service("zona")
+        .create({ nombre })
+        .then(() => {
+          getZonas();
+        });
+    }
+    limpiar();
+  };
+  const editarZona = (dato) => {
+    setDato(dato);
+    setNombre(dato.nombre);
+    desplegar();
+    setEditing(true);
   };
 
-  useEffect(() => {
+  const getZonas = () => {
     Api.service("zona")
       .find()
-      .then((response) => response)
       .then((data) => verDatos(data));
-  }, []);
+  };
 
   return (
     <div>
-      <Navbarr />
       <div className="container">
         <div>
           <h1 className="text-center"> Zona</h1>
@@ -45,9 +70,11 @@ const Zona = (props) => {
             Nueva Zona
           </Button>
 
-          <Modal show={show} onHide={ocultar}>
+          <Modal show={show} onHide={limpiar}>
             <Modal.Header closeButton>
-              <Modal.Title>Nueva Zona</Modal.Title>
+              <Modal.Title>
+                {editing ? "Editar Zona" : "Nueva Zona"}
+              </Modal.Title>
             </Modal.Header>
             <Modal.Body>
               <form>
@@ -57,25 +84,24 @@ const Zona = (props) => {
                     onChange={handleChange}
                     className="form-control"
                     type="text"
-                    name="nombre"
-                    value={state.form.nombre}
+                    value={nombre}
                   />
                 </div>
               </form>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={ocultar}>
+              <Button variant="secondary" onClick={limpiar}>
                 Cancelar
               </Button>
-              <Button variant="primary" onClick={crearZona}>
-                Crear
+              <Button variant="primary" onClick={saveZona}>
+                {editing ? "Guardar" : "Crear"}
               </Button>
             </Modal.Footer>
           </Modal>
         </div>
         <br />
         <div>
-          <Table striped bordered hover>
+          <Table responsive>
             <thead>
               <tr>
                 <th>#</th>
@@ -85,13 +111,15 @@ const Zona = (props) => {
             </thead>
             <tbody>
               {datos.data &&
-                datos.data.map((dato) => {
+                datos.data.map((dato, num) => {
                   return (
                     <tr key={dato.id}>
-                      <td>{dato.id}</td>
+                      <td>{num + 1}</td>
                       <td>{dato.nombre}</td>
                       <td>
-                        <Button variant="link">Editar</Button>
+                        <Button variant="link" onClick={() => editarZona(dato)}>
+                          Editar
+                        </Button>
                       </td>
                     </tr>
                   );
