@@ -82,6 +82,7 @@ const Adicionales = () => {
                       type="text"
                       name="nombre"
                       value={adicional.nombre}
+                      disabled
                     />
                   </div>
                   <div className="form-group">

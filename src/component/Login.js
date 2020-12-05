@@ -20,8 +20,6 @@ const Login = (props) => {
       usuario: usuario,
       password: password,
     }).then((user) => {
-      // props.history.push("/cliente");
-      // window.location.reload();
       fnLogin()
     });
   };

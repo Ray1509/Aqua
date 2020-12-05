@@ -5,30 +5,33 @@ import moment from "moment";
 import "moment/locale/es";
 import Modal from "react-bootstrap/Modal";
 import Api from "../conexion";
-import { Link } from "react-router-dom";
+import ClienteItem from "./ClienteItem";
+import Form from "react-bootstrap/Form";
+import _ from "underscore";
 
 const Cliente = (props) => {
   const [formulario, setFormulario] = useState({
-    form: {
-      nombre: "",
-      codigo: "",
-      ci: "",
-      fecha_pago: moment().format("YYYY-MM-DDTHH:mm:ss.SSSSZ"),
-      ultima_lectura: "",
-      codigoMedidor: "",
-      lectura_actual: "",
-    },
+    nombre: "",
+    codigo: "",
+    ci: "",
+    fecha_pago: "",
+    ultima_lectura: "",
+    codigo_medidor: "",
+    zonaId: null,
   });
   const [editar, setEditar] = useState(false);
 
   const [datos, setDatos] = useState([]);
   const [show, setShow] = useState(false);
-  const [cliente, setCliente] = useState({});
+  const [zonas, setZonas] = useState([]);
+  const [alcantarillado, setAlcantarillado] = useState(0);
 
   useEffect(() => {
     Api.authenticate()
       .then(() => {
+        getZonas();
         getClientes();
+        getAdicionales();
       })
       .catch((error) => {
         console.log(error);
@@ -39,42 +42,35 @@ const Cliente = (props) => {
 
   const limpiar = () => {
     setEditar(false);
-    setCliente({});
     setShow(false);
     setFormulario({});
   };
 
   const handleChange = (e) => {
+    console.log(e.target.value, e.target.name);
     setFormulario({
-      form: {
-        ...formulario.form,
-        [e.target.name]: e.target.value,
-      },
+      ...formulario,
+      [e.target.name]: e.target.value,
     });
   };
 
   const guardarCliente = () => {
+    console.log("aaaaaaaaaaaaaa", formulario);
     if (editar) {
       Api.service("cliente")
-        .patch(cliente.id, formulario.form)
+        .patch(formulario.id, formulario)
         .then(() => {
+          console.log(formulario);
           getClientes();
         });
     } else {
       Api.service("cliente")
-        .create(formulario.form)
+        .create(formulario)
         .then(() => {
           getClientes();
         });
     }
     limpiar();
-  };
-
-  const editarCliente = (dato) => {
-    setCliente(dato);
-    setFormulario(dato);
-    desplegar();
-    setEditar(true);
   };
 
   const getClientes = () => {
@@ -85,43 +81,39 @@ const Cliente = (props) => {
       });
   };
 
-  const generarConsumo = (cliente) => {
-    const cantidad = formulario.form.lectura_actual - cliente.ultima_lectura;
-    const mes = moment(cliente.fecha_pago)
-      .subtract(1, "months")
-      .format("YYYY-MM-DDTHH:mm:ss.SSSSZ");
-
-    let nuevoConsumo = {
-      lectura_actual: formulario.form.lectura_actual,
-      consumo: cantidad,
-      costo_consumo: 25 * cantidad,
-      costo_alcantarillado: 5,
-      costo_multa: 5,
-      mes_proceso: mes,
-      total_pago: 5,
-      fecha_pago: "",
-      clienteId: cliente.id,
-    };
-
-    const sigMes = moment(cliente.fecha_pago)
-      .add(1, "months")
-      .format("YYYY-MM-DDTHH:mm:ss.SSSSZ");
-    let editarCliente = {
-      fecha_pago: sigMes,
-      ultima_lectura: formulario.form.lectura_actual,
-    };
-
-    Api.service("consumo")
-      .create(nuevoConsumo)
-      .then(() => {
-        Api.service("cliente").patch(cliente.id, editarCliente);
-        window.location.reload();
+  const getZonas = () => {
+    Api.service("zona")
+      .find()
+      .then((response) => {
+        setZonas(response.data);
       });
+  };
+
+  const getAdicionales = () => {
+    Api.service("adicionales")
+      .find()
+      .then((response) => {
+        const costo_alcantarillado = _.find(response.data, (item) => {
+          return item.nombre === "Alcantarillado";
+        });
+        setAlcantarillado(costo_alcantarillado.costo);
+      });
+  };
+
+  const editarCliente = (cliente) => {
+    setFormulario(cliente);
+    // setFormulario({
+    //   ...cliente,
+    //   fecha_pago: moment(cliente.fecha_pago).add(1, "days"),
+    // });
+    console.log("aaaaaaaaaaaa", cliente);
+    setShow(true);
+    setEditar(true);
   };
 
   return (
     <div>
-      <div className="container">
+      <div className="container-fluid">
         <div>
           <h1 className="text-center"> Cliente </h1>
           <Button variant="primary" onClick={desplegar}>
@@ -134,88 +126,100 @@ const Cliente = (props) => {
               </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <form>
+              <Form>
                 <div className="row">
                   <div className="col">
-                    <div className="form-group">
-                      <label>Nombre</label>
-                      <input
+                    <Form.Group>
+                      <Form.Label>Nombre</Form.Label>
+                      <Form.Control
                         onChange={handleChange}
-                        className="form-control"
-                        type="text"
                         name="nombre"
                         value={formulario.nombre}
                       />
-                    </div>
+                    </Form.Group>
                   </div>
                 </div>
                 <div className="row">
                   <div className="col">
-                    <div className="form-group">
-                      <label>Codigo</label>
-                      <input
+                    <Form.Group>
+                      <Form.Label>Codigo</Form.Label>
+                      <Form.Control
                         onChange={handleChange}
-                        className="form-control"
                         type="number"
                         name="codigo"
                         value={formulario.codigo}
                       />
-                    </div>
+                    </Form.Group>
                   </div>
                   <div className="col">
-                    <div className="form-group">
-                      <label>C.I.</label>
-                      <input
+                    <Form.Group>
+                      <Form.Label>C.I.</Form.Label>
+                      <Form.Control
                         onChange={handleChange}
-                        className="form-control"
-                        type="text"
                         name="ci"
                         value={formulario.ci}
                       />
-                    </div>
+                    </Form.Group>
                   </div>
                 </div>
                 <div className="row">
                   <div className="col">
-                    <div className="form-group">
-                      <label>Fecha de pago</label>
-                      <input
+                    <Form.Group>
+                      <Form.Label>Fecha de pago</Form.Label>
+                      <Form.Control
                         onChange={handleChange}
-                        className="form-control"
                         type="date"
                         name="fecha_pago"
-                        value={formulario.fecha_pago}
+                        value={moment(formulario.fecha_pago).format(
+                          "YYYY-MM-DD"
+                        )}
                       />
-                    </div>
+                    </Form.Group>
                   </div>
                   <div className="col">
-                    <div className="form-group">
-                      <label>Ultima lectura</label>
-                      <input
+                    <Form.Group>
+                      <Form.Label>Ultima lectura</Form.Label>
+                      <Form.Control
                         onChange={handleChange}
-                        className="form-control"
                         type="number"
                         name="ultima_lectura"
                         value={formulario.ultima_lectura}
                       />
-                    </div>
+                    </Form.Group>
                   </div>
                 </div>
                 <div className="row">
-                  <div className="col">
-                    <div className="form-group">
-                      <label>Codigo de medidor</label>
-                      <input
+                  <div className="col-7">
+                    <Form.Group>
+                      <Form.Label>Codigo de medidor</Form.Label>
+                      <Form.Control
                         onChange={handleChange}
-                        className="form-control"
-                        type="text"
-                        name="codigoMedidor"
-                        value={formulario.codigoMedidor}
+                        name="codigo_medidor"
+                        value={formulario.codigo_medidor}
                       />
-                    </div>
+                    </Form.Group>
+                  </div>
+                  <div className="col-5">
+                    <Form.Group>
+                      <Form.Label>Zona</Form.Label>
+                      <Form.Control
+                        as="select"
+                        onChange={handleChange}
+                        name="zonaId"
+                        custom
+                      >
+                        {zonas.map((zona) => {
+                          return (
+                            <option key={zona.id} value={zona.id}>
+                              {zona.nombre}
+                            </option>
+                          );
+                        })}
+                      </Form.Control>
+                    </Form.Group>
                   </div>
                 </div>
-              </form>
+              </Form>
             </Modal.Body>
             <Modal.Footer>
               <Button variant="secondary" onClick={limpiar}>
@@ -245,49 +249,13 @@ const Cliente = (props) => {
               {datos.data &&
                 datos.data.map((dato) => {
                   return (
-                    <tr key={dato.id}>
-                      <td>{dato.codigo}</td>
-                      <td>{dato.nombre}</td>
-                      <td>
-                        {moment(dato.fecha_pago)
-                          .add(1, "days")
-                          .format("D, MMMM")}
-                      </td>
-                      <td>{dato.ultima_lectura}</td>
-                      <td>{dato.codigoMedidor}</td>
-                      <td>
-                        <div className="container row">
-                          <input
-                            onChange={handleChange}
-                            className="form-control col-7"
-                            type="number"
-                            name="lectura_actual"
-                            value={formulario.lectura_actual}
-                          />
-                          <Button
-                            className="col"
-                            variant="success"
-                            onClick={() => generarConsumo(dato)}
-                          >
-                            Generar
-                          </Button>
-                        </div>
-                      </td>
-                      <td>
-                        <Button
-                          variant="link"
-                          onClick={() => editarCliente(dato)}
-                        >
-                          Editar
-                        </Button>
-                        <Link
-                          className="btn btn-warning"
-                          to={`/consumo/${dato.id}`}
-                        >
-                          Historial
-                        </Link>
-                      </td>
-                    </tr>
+                    <ClienteItem
+                      cliente={dato}
+                      key={dato.id}
+                      editarCliente={editarCliente}
+                      getClientes={getClientes}
+                      alcantarillado={alcantarillado}
+                    />
                   );
                 })}
             </tbody>
