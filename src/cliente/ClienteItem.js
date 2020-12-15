@@ -3,7 +3,7 @@ import moment from "moment";
 import "moment/locale/es";
 import Button from "react-bootstrap/Button";
 import { Link } from "react-router-dom";
-import Api from "../conexion";
+import Api from "../Conexion";
 
 const ClienteItem = ({
   cliente,
@@ -27,11 +27,16 @@ const ClienteItem = ({
       .format("YYYY-MM-DD");
 
     let nuevoConsumo = {
-      costo_alcantarillado: alcantarillado,
       mes_proceso: mes,
       clienteId: cliente.id,
       lectura_anterior: cliente.ultima_lectura,
+      fecha_pago: moment().format("YYYY-MM-DD"),
     };
+    if (cliente.alcantarillado === 1) {
+      nuevoConsumo.costo_alcantarillado = alcantarillado;
+    } else {
+      nuevoConsumo.costo_alcantarillado = 0;
+    }
 
     let editarCliente = {
       fecha_pago: sigMes,
@@ -56,7 +61,7 @@ const ClienteItem = ({
       nuevoConsumo.lectura_actual = lectura;
     }
     nuevoConsumo.costo_consumo = costo_consumo;
-    nuevoConsumo.total_pago = costo_consumo + alcantarillado;
+    nuevoConsumo.total_pago = costo_consumo + nuevoConsumo.costo_alcantarillado;
 
     Api.service("consumo")
       .create(nuevoConsumo)
@@ -73,6 +78,7 @@ const ClienteItem = ({
     <tr>
       <td>{cliente.codigo}</td>
       <td>{cliente.nombre}</td>
+      <td>{moment(cliente.fecha_pago).subtract(1, "months").format("MMMM")}</td>
       <td>{moment(cliente.fecha_pago).format("D, MMMM")}</td>
       <td>{cliente.ultima_lectura}</td>
       <td>{cliente.codigo_medidor}</td>

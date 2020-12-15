@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
-import Api from "../conexion";
+import Api from "../Conexion";
 import Modal from "react-bootstrap/Modal";
+import Form from "react-bootstrap/Form";
 
 const Adicionales = () => {
   const [datos, verDatos] = useState([]);
@@ -73,29 +74,25 @@ const Adicionales = () => {
                 <Modal.Title>Editar</Modal.Title>
               </Modal.Header>
               <Modal.Body>
-                <form>
-                  <div className="form-group">
-                    <label>Nombre</label>
-                    <input
+                <Form>
+                  <Form.Group>
+                    <Form.Label>Nombre</Form.Label>
+                    <Form.Control
                       onChange={handleChange}
-                      className="form-control"
-                      type="text"
                       name="nombre"
                       value={adicional.nombre}
                       disabled
                     />
-                  </div>
-                  <div className="form-group">
-                    <label>Costo</label>
-                    <input
+                  </Form.Group>
+                  <Form.Group>
+                    <Form.Label>Costo</Form.Label>
+                    <Form.Control
                       onChange={handleChange}
-                      className="form-control"
-                      type="text"
                       name="costo"
                       value={adicional.costo}
                     />
-                  </div>
-                </form>
+                  </Form.Group>
+                </Form>
               </Modal.Body>
               <Modal.Footer>
                 <Button variant="secondary" onClick={limpiar}>

@@ -2,15 +2,16 @@ import React, { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import Api from "../conexion";
+import Api from "../Conexion";
 
 const Zona = (props) => {
   const [nombre, setNombre] = useState("");
   const [editing, setEditing] = useState(false);
   const [datos, verDatos] = useState([]);
   const [dato, setDato] = useState({});
-
   const [show, setShow] = useState(false);
+
+  const [validated, setValidated] = useState(false);
 
   useEffect(() => {
     Api.authenticate()
@@ -38,15 +39,18 @@ const Zona = (props) => {
         .patch(dato.id, { nombre })
         .then(() => {
           getZonas();
-        });
+          limpiar();
+        })
+        .catch((error) => error);
     } else {
       Api.service("zona")
         .create({ nombre })
         .then(() => {
           getZonas();
-        });
+          limpiar();
+        })
+        .catch((error) => error);
     }
-    limpiar();
   };
   const editarZona = (dato) => {
     setDato(dato);

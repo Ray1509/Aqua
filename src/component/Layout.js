@@ -1,5 +1,5 @@
 
-import Navbarr from '../navbar'
+import Navbarr from '../Navbar'
 
 
 const Layout = (props) => {

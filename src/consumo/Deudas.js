@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
-import Api from "../conexion";
+import Api from "../Conexion";
 import moment from "moment";
 import "moment/locale/es";
 
@@ -8,11 +8,14 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Recibo from "./Recibo";
+import _ from "underscore";
 
 const Deudas = (props) => {
   const [datos, setDatos] = useState([]);
   const [dato, setDato] = useState([]);
   const [show, setShow] = useState(false);
+  const [cliente, setCliente] = useState("");
+  const [aux, setAux] = useState([]);
 
   useEffect(() => {
     Api.authenticate()
@@ -28,6 +31,17 @@ const Deudas = (props) => {
     setShow(false);
   };
 
+  const handleChangeCliente = (e) => {
+    setCliente(e.target.value);
+
+    const busqueda = _.filter(datos, (item) => {
+      return item.cliente.nombre
+        .toLowerCase()
+        .includes(e.target.value.toLowerCase());
+    });
+    setAux(busqueda);
+  };
+
   const componentRef = useRef();
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
@@ -38,6 +52,7 @@ const Deudas = (props) => {
       .find({ query: { estado: false } })
       .then((response) => {
         setDatos(response.data);
+        setAux(response.data);
       });
   };
 
@@ -46,6 +61,7 @@ const Deudas = (props) => {
     setShow(true);
     console.log(data);
   };
+
   const generarPago = () => {
     handleClose();
     Api.service("consumo")
@@ -63,6 +79,15 @@ const Deudas = (props) => {
           <h1> Pagos pendientes </h1>
         </div>
         <br />
+        <input
+          onChange={handleChangeCliente}
+          className="form-control col-4"
+          placeholder="Busqueda por Nombre"
+          type="text"
+          name="cliente"
+          value={cliente}
+        />
+        <br />
         <div>
           <Table responsive>
             <thead>
@@ -76,8 +101,8 @@ const Deudas = (props) => {
               </tr>
             </thead>
             <tbody>
-              {datos &&
-                datos.map((dato) => {
+              {aux &&
+                aux.map((dato) => {
                   return (
                     <tr key={dato.id}>
                       <td>{dato.cliente.codigo}</td>

@@ -2,12 +2,13 @@ import React from "react";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import Home from "./home";
-import Adicionales from "./adicionales/adicionales";
-import Cliente from "./cliente/cliente";
-import Zona from "./zona/zona";
-import Consumo from "./consumo/consumo";
-import Layout from './component/Layout'
+import Home from "./Home";
+import Adicionales from "./adicionales/Adicionales";
+import Cliente from "./cliente/Cliente";
+import Zona from "./zona/Zona";
+import Consumo from "./consumo/Consumo";
+import Layout from "./component/Layout";
+import Precios from "./precios/Precios";
 
 const App = (props) => {
   return (
@@ -20,6 +21,7 @@ const App = (props) => {
             <Route exact path="/cliente" component={Cliente} />
             <Route exact path="/zona" component={Zona} />
             <Route exact path="/consumo/:clienteId" component={Consumo} />
+            <Route exact path="/precios" component={Precios} />
           </Switch>
         </Layout>
       </Router>
