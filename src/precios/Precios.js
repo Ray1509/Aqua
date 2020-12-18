@@ -6,19 +6,19 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
+import Col from "react-bootstrap/Col";
 
 const Precios = () => {
   const [precio, setPrecio] = useState({
-    form: {
-      minimo: "",
-      maximo: "",
-      precio: "",
-      estado: false,
-    },
+    minimo: "",
+    maximo: "",
+    precio: "",
+    estado: undefined,
   });
   const [show, setShow] = useState(false);
   const [editar, setEditar] = useState(false);
   const [datos, setDatos] = useState([]);
+  const [validated, setValidated] = useState(false);
 
   useEffect(() => {
     Api.authenticate()
@@ -39,21 +39,31 @@ const Precios = () => {
     });
   };
 
-  const guardarPrecio = () => {
+  const guardarPrecio = (event) => {
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    setValidated(true);
+
     if (editar) {
       Api.service("precio-consumo")
         .patch(precio.id, precio)
-        .then(() => {
+        .then((res) => {
           getPrecios();
-        });
+          limpiar();
+        })
+        .catch((error) => error);
     } else {
       Api.service("precio-consumo")
         .create(precio)
-        .then(() => {
+        .then((res) => {
           getPrecios();
-        });
+          limpiar();
+        })
+        .catch((error) => error);
     }
-    limpiar();
   };
 
   const editarPrecio = (dato) => {
@@ -66,14 +76,20 @@ const Precios = () => {
     Api.service("precio-consumo")
       .find()
       .then((response) => {
-        console.log(response);
         setDatos(response);
       });
   };
 
   const limpiar = () => {
+    setPrecio({
+      minimo: "",
+      maximo: "",
+      precio: "",
+      estado: undefined,
+    });
     setEditar(false);
     setShow(false);
+    setValidated(false);
   };
 
   return (
@@ -92,59 +108,68 @@ const Precios = () => {
               </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              <Form>
-                <div className="row">
-                  <div className="col-6">
-                    <Form.Group>
-                      <Form.Label>Cantidad minima</Form.Label>
-                      <Form.Control
-                        onChange={handleChange}
-                        type="number"
-                        name="minimo"
-                        value={precio.minimo}
-                      />
-                    </Form.Group>
-                  </div>
-                  <div className="col-6">
-                    <Form.Group>
-                      <Form.Label>Cantidad maxima</Form.Label>
-                      <Form.Control
-                        onChange={handleChange}
-                        type="number"
-                        name="maximo"
-                        value={precio.maximo}
-                      />
-                    </Form.Group>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-6">
-                    <Form.Group>
-                      <Form.Label>Precio unitario</Form.Label>
-                      <Form.Control
-                        onChange={handleChange}
-                        type="number"
-                        name="precio"
-                        value={precio.precio}
-                      />
-                    </Form.Group>
-                  </div>
-                  <div className="col-6">
-                    <Form.Group>
-                      <Form.Label>Estado</Form.Label>
-                      <Form.Control
-                        as="select"
-                        onChange={handleChange}
-                        name="estado"
-                        value={precio.estado}
-                        custom
-                      >
-                        <option value={false}>Deshabilitado</option>
-                        <option value={true}>Habilitado</option>
-                      </Form.Control>
-                    </Form.Group>
-                  </div>
-                </div>
+              <Form noValidate validated={validated}>
+                <Form.Row>
+                  <Form.Group as={Col} md="6" controlId="validacionMinimo">
+                    <Form.Label>Cantidad minima</Form.Label>
+                    <Form.Control
+                      required
+                      onChange={handleChange}
+                      type="number"
+                      name="minimo"
+                      value={precio.minimo}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      Este campo es obigatorio
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Group as={Col} md="6" controlId="validacionMaximo">
+                    <Form.Label>Cantidad maxima</Form.Label>
+                    <Form.Control
+                      required
+                      onChange={handleChange}
+                      type="number"
+                      name="maximo"
+                      value={precio.maximo}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      Este campo es obigatorio
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Form.Row>
+                <Form.Row>
+                  <Form.Group as={Col} md="6" controlId="validacionPrecio">
+                    <Form.Label>Precio unitario</Form.Label>
+                    <Form.Control
+                      required
+                      onChange={handleChange}
+                      type="number"
+                      name="precio"
+                      value={precio.precio}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      Este campo es obigatorio
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Group as={Col} md="6" controlId="validacionEstado">
+                    <Form.Label>Estado</Form.Label>
+                    <Form.Control
+                      required
+                      as="select"
+                      onChange={handleChange}
+                      name="estado"
+                      value={precio.estado}
+                      custom
+                    >
+                      <option value=""> </option>
+                      <option value={false || 0}>Deshabilitado</option>
+                      <option value={1 || true}>Habilitado</option>
+                    </Form.Control>
+                    <Form.Control.Feedback type="invalid">
+                      Este campo es obigatorio
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Form.Row>
               </Form>
             </Modal.Body>
             <Modal.Footer>

@@ -4,6 +4,7 @@ import "moment/locale/es";
 import Button from "react-bootstrap/Button";
 import { Link } from "react-router-dom";
 import Api from "../Conexion";
+import _ from "underscore";
 
 const ClienteItem = ({
   cliente,
@@ -41,38 +42,49 @@ const ClienteItem = ({
     let editarCliente = {
       fecha_pago: sigMes,
     };
-
-    let costo_consumo = 15;
-    if (lectura > 0 && lectura >= cliente.ultima_lectura) {
+    let costo_consumo;
+    if (lectura >= 0 && lectura >= cliente.ultima_lectura) {
       const cantidad = lectura - cliente.ultima_lectura;
-      if (cantidad <= 10) {
-        costo_consumo = 15;
-      } else if (cantidad > 10 && cantidad <= 15) {
-        costo_consumo = 4 * cantidad;
-      } else if (cantidad > 15 && cantidad <= 20) {
-        costo_consumo = 6 * cantidad;
-      } else if (cantidad > 20 && cantidad <= 25) {
-        costo_consumo = 8 * cantidad;
-      } else if (cantidad > 25) {
-        costo_consumo = 10 * cantidad;
-      }
-      nuevoConsumo.consumo = cantidad;
-      editarCliente.ultima_lectura = lectura;
-      nuevoConsumo.lectura_actual = lectura;
-    }
-    nuevoConsumo.costo_consumo = costo_consumo;
-    nuevoConsumo.total_pago = costo_consumo + nuevoConsumo.costo_alcantarillado;
 
-    Api.service("consumo")
-      .create(nuevoConsumo)
-      .then(() => {
-        Api.service("cliente")
-          .patch(cliente.id, editarCliente)
-          .then(() => {
-            getClientes();
-            setLectura("");
+      Api.service("precio-consumo")
+        .find({ query: { estado: true } })
+        .then((res) => {
+          const precio = _.find(res.data, (item) => {
+            if (!item.maximo) {
+              return true;
+            }
+            return item.minimo <= cantidad && item.maximo >= cantidad;
           });
-      });
+          if (precio.maximo) {
+            if (precio.minimo) {
+              costo_consumo = precio.precio * cantidad;
+            } else {
+              costo_consumo = precio.precio;
+            }
+          } else {
+            costo_consumo = precio.precio;
+          }
+
+          nuevoConsumo.consumo = cantidad;
+          editarCliente.ultima_lectura = lectura;
+          nuevoConsumo.lectura_actual = lectura;
+          nuevoConsumo.costo_consumo = costo_consumo;
+          nuevoConsumo.total_pago =
+            costo_consumo + nuevoConsumo.costo_alcantarillado;
+        })
+        .then(() => {
+          Api.service("consumo")
+            .create(nuevoConsumo)
+            .then(() => {
+              Api.service("cliente")
+                .patch(cliente.id, editarCliente)
+                .then(() => {
+                  getClientes();
+                  setLectura(0);
+                });
+            });
+        });
+    }
   };
   return (
     <tr>

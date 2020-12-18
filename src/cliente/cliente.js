@@ -12,7 +12,7 @@ import _ from "underscore";
 
 const Cliente = (props) => {
   const [formulario, setFormulario] = useState({
-    nombre: "",
+    nombre: null,
     codigo: "",
     ci: "",
     fecha_pago: "",
@@ -49,7 +49,7 @@ const Cliente = (props) => {
     setEditar(false);
     setShow(false);
     setFormulario({
-      nombre: "",
+      nombre: null,
       codigo: "",
       ci: "",
       fecha_pago: "",

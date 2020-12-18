@@ -4,6 +4,7 @@ import Button from "react-bootstrap/Button";
 import Api from "../Conexion";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
+import Col from "react-bootstrap/Col";
 
 const Adicionales = () => {
   const [datos, verDatos] = useState([]);
@@ -17,6 +18,7 @@ const Adicionales = () => {
 
   const [show, setShow] = useState(false);
   const desplegar = () => setShow(true);
+  const [validated, setValidated] = useState(false);
 
   useEffect(() => {
     Api.authenticate()
@@ -47,19 +49,33 @@ const Adicionales = () => {
     setAdicional(dato);
   };
 
-  const editarAdicional = () => {
+  const editarAdicional = (event) => {
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    setValidated(true);
+
     Api.service("adicionales")
       .patch(dato.id, adicional.form)
       .then(() => {
         getAdicionales();
-      });
-    limpiar();
+        limpiar();
+      })
+      .catch((error) => error);
   };
 
   const limpiar = () => {
-    setAdicional({});
+    setAdicional({
+      form: {
+        nombre: "",
+        costo: "",
+      },
+    });
     setShow(false);
     setDato({});
+    setValidated(false);
   };
 
   return (
@@ -74,8 +90,8 @@ const Adicionales = () => {
                 <Modal.Title>Editar</Modal.Title>
               </Modal.Header>
               <Modal.Body>
-                <Form>
-                  <Form.Group>
+                <Form noValidate validated={validated}>
+                  <Form.Group as={Col}>
                     <Form.Label>Nombre</Form.Label>
                     <Form.Control
                       onChange={handleChange}
@@ -84,13 +100,17 @@ const Adicionales = () => {
                       disabled
                     />
                   </Form.Group>
-                  <Form.Group>
+                  <Form.Group as={Col} controlId="validacionCosto">
                     <Form.Label>Costo</Form.Label>
                     <Form.Control
+                      required
                       onChange={handleChange}
                       name="costo"
                       value={adicional.costo}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Este campo es obigatorio
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </Form>
               </Modal.Body>
