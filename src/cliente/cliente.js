@@ -235,6 +235,7 @@ const Cliente = (props) => {
                       onChange={handleChange}
                       name="zonaId"
                       custom
+                      value={formulario.zonaId}
                     >
                       {zonas.map((zona) => {
                         return (
@@ -260,9 +261,10 @@ const Cliente = (props) => {
                       onChange={handleChange}
                       name="alcantarillado"
                       custom
+                      value={formulario.alcantarillado}
                     >
-                      <option value={false}>No</option>
-                      <option value={true}>Si</option>
+                      <option value={false || 0}>No</option>
+                      <option value={1 || true}>Si</option>
                     </Form.Control>
                     <Form.Control.Feedback type="invalid">
                       Este campo es obigatorio

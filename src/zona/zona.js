@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -138,6 +139,12 @@ const Zona = (props) => {
                         <Button variant="link" onClick={() => editarZona(dato)}>
                           Editar
                         </Button>
+                        <Link
+                          className="btn btn-warning"
+                          to={`/zona/${dato.id}`}
+                        >
+                          Ver clientes
+                        </Link>
                       </td>
                     </tr>
                   );

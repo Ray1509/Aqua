@@ -9,6 +9,7 @@ import Zona from "./zona/Zona";
 import Consumo from "./consumo/Consumo";
 import Layout from "./component/Layout";
 import Precios from "./precios/Precios";
+import VerZona from "./zona/VerZona";
 
 const App = (props) => {
   return (
@@ -22,6 +23,7 @@ const App = (props) => {
             <Route exact path="/zona" component={Zona} />
             <Route exact path="/consumo/:clienteId" component={Consumo} />
             <Route exact path="/precios" component={Precios} />
+            <Route exact path="/zona/:zonaId" component={VerZona} />
           </Switch>
         </Layout>
       </Router>

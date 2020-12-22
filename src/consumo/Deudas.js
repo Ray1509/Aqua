@@ -57,12 +57,13 @@ const Deudas = (props) => {
   };
 
   const pagar = (data) => {
+    console.log(data);
     setDato(data);
     setShow(true);
-    console.log(data);
   };
 
   const generarPago = () => {
+    handlePrint();
     handleClose();
     Api.service("consumo")
       .patch(dato.id, { estado: true })
@@ -132,10 +133,7 @@ const Deudas = (props) => {
             Cancelar
           </Button>
           <Button variant="primary" onClick={generarPago}>
-            Pagar
-          </Button>
-          <Button variant="primary" onClick={handlePrint}>
-            Imprimir
+            Pagar e Imprimir
           </Button>
         </Modal.Footer>
       </Modal>

@@ -47,7 +47,7 @@ class Recibo extends React.Component {
 
               {this.dato.cliente && (
                 <label>
-                  {moment(this.dato.cliente.mes_proceso).format("MMMM-YYYY")}
+                  {moment(this.dato.mes_proceso).format("MMMM-YYYY")}
                 </label>
               )}
             </div>
