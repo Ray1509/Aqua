@@ -73,7 +73,8 @@ const Zona = (props) => {
   const getZonas = () => {
     Api.service("zona")
       .find()
-      .then((data) => verDatos(data));
+      .then((data) => verDatos(data))
+      .catch((error) => error);
   };
 
   return (

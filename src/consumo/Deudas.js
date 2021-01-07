@@ -57,7 +57,6 @@ const Deudas = (props) => {
   };
 
   const pagar = (data) => {
-    console.log(data);
     setDato(data);
     setShow(true);
   };

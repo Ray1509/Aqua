@@ -11,6 +11,8 @@ const ClienteItem = ({
   editarCliente,
   getClientes,
   alcantarillado,
+  asignarMedidor,
+  usuario,
 }) => {
   const [lectura, setLectura] = useState(0);
 
@@ -92,8 +94,8 @@ const ClienteItem = ({
       <td>{cliente.nombre}</td>
       <td>{moment(cliente.fecha_pago).subtract(1, "months").format("MMMM")}</td>
       <td>{moment(cliente.fecha_pago).format("D, MMMM")}</td>
+      <td>{cliente.medidor.codigo}</td>
       <td>{cliente.ultima_lectura}</td>
-      <td>{cliente.codigo_medidor}</td>
       <td>
         <div className="container row">
           <input
@@ -119,6 +121,11 @@ const ClienteItem = ({
         <Link className="btn btn-warning" to={`/consumo/${cliente.id}`}>
           Historial
         </Link>
+        {usuario.admin ? (
+          <Button variant="primary" onClick={() => asignarMedidor(cliente)}>
+            Medidor
+          </Button>
+        ) : null}
       </td>
     </tr>
   );

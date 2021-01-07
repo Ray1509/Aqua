@@ -5,6 +5,7 @@ import Table from "react-bootstrap/Table";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Recibo from "./Recibo";
+import _ from "underscore";
 
 import moment from "moment";
 import "moment/locale/es";
@@ -15,6 +16,7 @@ const Consumo = (props) => {
   const [datos, setDatos] = useState([]);
   const [show, setShow] = useState(false);
   const [dato, setDato] = useState([]);
+  const [cliente, setCliente] = useState({});
 
   const componentRef = useRef();
   const handlePrint = useReactToPrint({
@@ -38,10 +40,19 @@ const Consumo = (props) => {
       });
   };
 
+  const getCliente = () => {
+    Api.service("cliente")
+      .get(clienteId)
+      .then((cliente) => {
+        setCliente(cliente);
+      });
+  };
+
   useEffect(() => {
     Api.authenticate()
       .then(() => {
         getConsumo();
+        getCliente();
       })
       .catch(() => {});
   }, []);
@@ -50,7 +61,7 @@ const Consumo = (props) => {
     <div>
       <div className="container">
         <div>
-          <h1 className="text-center"> Consumo de cliente </h1>
+          <h1 className="text-center">Consumo de {cliente.nombre}</h1>
         </div>
         <br />
         <div>

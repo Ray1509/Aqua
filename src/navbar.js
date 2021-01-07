@@ -10,7 +10,7 @@ const Navbarr = () => {
 
   const cerrarSesion = () => {
     Api.logout();
-    window.location.reload();
+    window.location.href = "/";
   };
 
   useEffect(() => {
@@ -68,13 +68,18 @@ const Navbarr = () => {
                     Precios
                   </Link>
                 ) : null}
+                <Link
+                  className="text-reset text-decoration-none mr-3"
+                  to="/deudasmedidor"
+                >
+                  Deudas Medidor
+                </Link>
               </div>
               <div>
                 <label className="mr-2">({usuario.usuario})</label>
-
                 <Link
                   className="text-reset text-decoration-none text-end"
-                  to="/"
+                  to="#"
                   onClick={cerrarSesion}
                 >
                   Cerrar sesion

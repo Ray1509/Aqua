@@ -17,9 +17,9 @@ const Cliente = (props) => {
     ci: "",
     fecha_pago: "",
     ultima_lectura: "",
-    codigo_medidor: "",
     zonaId: null,
     alcantarillado: false,
+    medidorId: null,
   });
   const [editar, setEditar] = useState(false);
 
@@ -28,19 +28,26 @@ const Cliente = (props) => {
   const [zonas, setZonas] = useState([]);
   const [alcantarillado, setAlcantarillado] = useState(0);
   const [cliente, setCliente] = useState("");
+  const [codigoMedidor, setCodigoMedidor] = useState("");
   const [aux, setAux] = useState([]);
   const [validated, setValidated] = useState(false);
+  const [showMedidor, setShowMedidor] = useState(false);
+  const [medidor, setMedidor] = useState({
+    codigo: "",
+    precio: "",
+    saldo: "",
+  });
+  const [usuario, setUsuario] = useState({});
 
   useEffect(() => {
     Api.authenticate()
-      .then(() => {
+      .then((res) => {
+        setUsuario(res.usuario);
         getZonas();
         getClientes();
         getAdicionales();
       })
-      .catch((error) => {
-        console.log(error);
-      });
+      .catch((error) => error);
   }, []);
 
   const desplegar = () => setShow(true);
@@ -54,9 +61,9 @@ const Cliente = (props) => {
       ci: "",
       fecha_pago: "",
       ultima_lectura: "",
-      codigo_medidor: "",
       zonaId: null,
       alcantarillado: false,
+      medidorId: null,
     });
     setValidated(false);
   };
@@ -73,6 +80,20 @@ const Cliente = (props) => {
 
     const busqueda = _.filter(datos, (item) => {
       return item.nombre.toLowerCase().includes(e.target.value.toLowerCase());
+    });
+    setAux(busqueda);
+  };
+
+  const handleChangeCodigoMedidor = (e) => {
+    setCodigoMedidor(e.target.value);
+
+    const busqueda = _.filter(datos, (item) => {
+      if (!item.medidorId) {
+        return false;
+      }
+      return item.medidor.codigo
+        .toLowerCase()
+        .includes(e.target.value.toLowerCase());
     });
     setAux(busqueda);
   };
@@ -136,6 +157,53 @@ const Cliente = (props) => {
     setFormulario(cliente);
     setShow(true);
     setEditar(true);
+  };
+
+  const limpiarModal = () => {
+    setShowMedidor(false);
+    setMedidor({ codigo: "", precio: "", saldo: "" });
+    setValidated(false);
+  };
+
+  const handleChangeMedidor = (e) => {
+    setMedidor({
+      ...medidor,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const asignarMedidor = (cliente) => {
+    setMedidor(cliente.medidor);
+    setShowMedidor(true);
+    setFormulario(cliente);
+  };
+
+  const guardarMedidor = (event) => {
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    setValidated(true);
+    if (formulario.medidorId) {
+      Api.service("medidor")
+        .patch(medidor.id, medidor)
+        .then(() => {
+          getClientes();
+          limpiarModal();
+        });
+    } else {
+      Api.service("medidor")
+        .create({ ...medidor, saldo: medidor.precio })
+        .then((response) => {
+          Api.service("cliente")
+            .patch(formulario.id, { medidorId: response.id })
+            .then((res) => {
+              getClientes();
+              limpiarModal();
+            });
+        });
+    }
   };
 
   return (
@@ -218,16 +286,7 @@ const Cliente = (props) => {
                   </Form.Group>
                 </Form.Row>
                 <Form.Row>
-                  <Form.Group as={Col} md="5">
-                    <Form.Label>Codigo de medidor</Form.Label>
-                    <Form.Control
-                      type="text"
-                      onChange={handleChange}
-                      name="codigo_medidor"
-                      value={formulario.codigo_medidor}
-                    />
-                  </Form.Group>
-                  <Form.Group as={Col} md="4" controlId="validacionZona">
+                  <Form.Group as={Col} md="5" controlId="validacionZona">
                     <Form.Label>Zona</Form.Label>
                     <Form.Control
                       required
@@ -235,8 +294,9 @@ const Cliente = (props) => {
                       onChange={handleChange}
                       name="zonaId"
                       custom
-                      value={formulario.zonaId}
+                      value={formulario.zonaId || ""}
                     >
+                      <option>Seleccione una zona </option>
                       {zonas.map((zona) => {
                         return (
                           <option key={zona.id} value={zona.id}>
@@ -251,7 +311,7 @@ const Cliente = (props) => {
                   </Form.Group>
                   <Form.Group
                     as={Col}
-                    md="3"
+                    md="4"
                     controlId="validacionAlcantarillado"
                   >
                     <Form.Label>Alcantarillado</Form.Label>
@@ -261,8 +321,9 @@ const Cliente = (props) => {
                       onChange={handleChange}
                       name="alcantarillado"
                       custom
-                      value={formulario.alcantarillado}
+                      value={formulario.alcantarillado || ""}
                     >
+                      <option>Seleccione</option>
                       <option value={false || 0}>No</option>
                       <option value={1 || true}>Si</option>
                     </Form.Control>
@@ -284,15 +345,27 @@ const Cliente = (props) => {
           </Modal>
         </div>
         <br />
-        <div>
-          <input
-            onChange={handleChangeCliente}
-            className="form-control col-4 "
-            placeholder="Busqueda por Nombre"
-            type="text"
-            name="cliente"
-            value={cliente}
-          />
+        <div className="row">
+          <div className="col-6">
+            <input
+              onChange={handleChangeCliente}
+              className="form-control"
+              placeholder="Busqueda por Nombre"
+              type="text"
+              name="cliente"
+              value={cliente}
+            />
+          </div>
+          <div className="col-6">
+            <input
+              onChange={handleChangeCodigoMedidor}
+              className="form-control"
+              placeholder="Busqueda por Codigo Medidor"
+              type="text"
+              name="codigoMedidor"
+              value={codigoMedidor}
+            />
+          </div>
         </div>
         <br />
         <div>
@@ -303,8 +376,8 @@ const Cliente = (props) => {
                 <th>Nombre</th>
                 <th>Mes proceso</th>
                 <th>Fecha pago</th>
+                <th>Codigo medidor</th>
                 <th>Ultima lectura</th>
-                <th>Codigo de Medidor</th>
                 <th>lectura Actual</th>
                 <th>Acciones</th>
               </tr>
@@ -319,6 +392,8 @@ const Cliente = (props) => {
                       editarCliente={editarCliente}
                       getClientes={getClientes}
                       alcantarillado={alcantarillado}
+                      asignarMedidor={asignarMedidor}
+                      usuario={usuario}
                     />
                   );
                 })}
@@ -326,6 +401,50 @@ const Cliente = (props) => {
           </Table>
         </div>
       </div>
+
+      <Modal show={showMedidor} onHide={limpiarModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Asignar Medidor</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form noValidate validated={validated}>
+            <Form.Group as={Col} controlId="validacionCodigo">
+              <Form.Label>Codigo</Form.Label>
+              <Form.Control
+                required
+                type="text"
+                onChange={handleChangeMedidor}
+                name="codigo"
+                value={medidor.codigo}
+              />
+              <Form.Control.Feedback type="invalid">
+                Este campo es obigatorio
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group as={Col} controlId="validacionPrecio">
+              <Form.Label>Precio</Form.Label>
+              <Form.Control
+                required
+                type="number"
+                onChange={handleChangeMedidor}
+                name="precio"
+                value={medidor.precio}
+              />
+              <Form.Control.Feedback type="invalid">
+                Este campo es obigatorio
+              </Form.Control.Feedback>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={limpiarModal}>
+            Cancelar
+          </Button>
+          <Button variant="primary" onClick={guardarMedidor}>
+            Guardar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

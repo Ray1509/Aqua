@@ -25,9 +25,7 @@ const Precios = () => {
       .then(() => {
         getPrecios();
       })
-      .catch((error) => {
-        console.log(error);
-      });
+      .catch((error) => error);
   }, []);
 
   const desplegar = () => setShow(true);

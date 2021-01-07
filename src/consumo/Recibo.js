@@ -54,7 +54,11 @@ class Recibo extends React.Component {
             <div className="col-6">
               <strong className="col-4">Fecha de Pago</strong>
               {this.dato.cliente && (
-                <label>{moment().format("DD-MM-YYYY")}</label>
+                <label>
+                  {moment(
+                    this.dato.estado ? this.dato.fecha_pago : undefined
+                  ).format("DD-MM-YYYY")}
+                </label>
               )}
             </div>
           </div>

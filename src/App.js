@@ -10,6 +10,9 @@ import Consumo from "./consumo/Consumo";
 import Layout from "./component/Layout";
 import Precios from "./precios/Precios";
 import VerZona from "./zona/VerZona";
+import PagoMedidor from "./medidor/PagoMedidor";
+import HistorialPagos from "./medidor/HistorialPagos";
+import DeudasMedidor from "./medidor/DeudasMedidor";
 
 const App = (props) => {
   return (
@@ -24,6 +27,13 @@ const App = (props) => {
             <Route exact path="/consumo/:clienteId" component={Consumo} />
             <Route exact path="/precios" component={Precios} />
             <Route exact path="/zona/:zonaId" component={VerZona} />
+            <Route exact path="/pagomedidor" component={PagoMedidor} />
+            <Route
+              exact
+              path="/pagomedidor/:medidorId"
+              component={HistorialPagos}
+            />
+            <Route exact path="/deudasmedidor" component={DeudasMedidor} />
           </Switch>
         </Layout>
       </Router>

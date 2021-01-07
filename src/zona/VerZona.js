@@ -49,7 +49,7 @@ const VerZona = (props) => {
                       <td>{cliente.codigo}</td>
                       <td>{cliente.nombre}</td>
                       <td>{cliente.ci}</td>
-                      <td>{cliente.codigo_medidor}</td>
+                      <td>{cliente.medidor ? cliente.medidor.codigo : ""}</td>
                       <td>{cliente.zona.nombre}</td>
                     </tr>
                   );
